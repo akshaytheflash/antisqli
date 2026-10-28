@@ -1,0 +1,85 @@
+version: 2
+
+project_name: sqli
+
+before:
+  hooks:
+    - go mod tidy
+    - go mod verify
+
+builds:
+  - id: sqli
+    main: ./cmd/sqli
+    binary: sqli
+    env:
+      - CGO_ENABLED=0
+    flags:
+      - -trimpath
+    ldflags:
+      - -s -w
+      - -X github.com/akshaytheflash/antisqli/internal/version.Version={{ .Version }}
+      - -X github.com/akshaytheflash/antisqli/internal/version.Commit={{ .ShortCommit }}
+      - -X github.com/akshaytheflash/antisqli/internal/version.Date={{ .CommitDate }}
+    goos:
+      - linux
+      - darwin
+      - windows
+    goarch:
+      - amd64
+      - arm64
+    mod_timestamp: "{{ .CommitTimestamp }}"
+
+archives:
+  - id: sqli
+    formats:
+      - tar.gz
+    format_overrides:
+      - goos: windows
+        formats:
+          - zip
+    name_template: >-
+      {{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}
+    files:
+      - README.md
+      - LICENSE
+
+checksum:
+  name_template: checksums.txt
+  algorithm: sha256
+
+snapshot:
+  version_template: "{{ incpatch .Version }}-next"
+
+changelog:
+  sort: asc
+  use: github
+  filters:
+    exclude:
+      - "^docs:"
+      - "^test:"
+      - "^chore:"
+      - "merge conflict"
+      - Merge pull request
+      - Merge remote-tracking branch
+      - Merge branch
+  groups:
+    - title: Features
+      regexp: '^.*?feat(\(.+\))??!?:.+$'
+      order: 0
+    - title: Fixes
+      regexp: '^.*?fix(\(.+\))??!?:.+$'
+      order: 1
+    - title: Other changes
+      order: 999
+
+release:
+  github:
+    owner: akshaytheflash
+    name: antisqli
+  draft: false
+  prerelease: auto
+  footer: |
+    **Full changelog**: https://github.com/akshaytheflash/antisqli/compare/{{ .PreviousTag }}...{{ .Tag }}
+
+    > sqli is an authorised-testing tool. Only scan systems you own or have
+    > written permission to assess.

@@ -1,0 +1,7 @@
+POST /form HTTP/1.1
+Host: 127.0.0.1:8099
+Content-Type: application/x-www-form-urlencoded
+User-Agent: sqli-demo
+Accept: */*
+
+user=alice&pass=secret
